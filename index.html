@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Facility Job Log</title>
+  <meta name="theme-color" content="#9E1B1F">
+  <meta name="description" content="Record attendance and work done at facilities, with photos.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Job Log">
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+      <span>Facility Job Log</span>
+    </div>
+    <button id="userChip" class="chip-btn" hidden aria-label="Change technician"></button>
+  </header>
+  <div id="demoBanner" class="banner" hidden>Demo mode with sample tickets. Nothing is saved. Add your Apps Script URL in <code>config.js</code> to go live.</div>
+
+  <main id="app">
+    <!-- Sign in -->
+    <section id="screenLogin" class="screen" hidden>
+      <div class="card login">
+        <h1>Sign in</h1>
+        <p class="muted">Your name is attached to every record you submit.</p>
+        <label class="field"><span>Your name</span><input id="techName" autocomplete="name" placeholder="e.g. Ahmad Faiz" required></label>
+        <label class="field"><span>Team PIN</span><input id="techPin" inputmode="numeric" type="password" autocomplete="current-password" placeholder="PIN from your supervisor" required></label>
+        <button id="btnLogin" class="btn primary block">Continue</button>
+        <p id="loginErr" class="error" hidden></p>
+      </div>
+    </section>
+
+    <!-- Record form -->
+    <section id="screenForm" class="screen" hidden>
+      <div class="step" id="stepFacility">
+        <div class="step-head"><span class="num">1</span><h2>Facility</h2><button id="btnRefresh" class="link-btn" aria-label="Reload ticket list">Refresh</button></div>
+        <div class="combo">
+          <input id="facilitySearch" type="search" placeholder="Search facility, e.g. Kota Bharu" autocomplete="off" aria-label="Search facility">
+          <div id="facilityList" class="list" role="listbox"></div>
+        </div>
+        <div id="facilityChosen" class="chosen" hidden></div>
+      </div>
+
+      <div class="step" id="stepTicket" hidden>
+        <div class="step-head"><span class="num">2</span><h2>Ticket</h2><span id="ticketCount" class="muted small"></span></div>
+        <input id="ticketSearch" type="search" placeholder="Filter tickets" autocomplete="off" aria-label="Filter tickets">
+        <div id="ticketList" class="tickets"></div>
+      </div>
+
+      <div class="step" id="stepDetail" hidden>
+        <div class="step-head"><span class="num">3</span><h2>Ticket details</h2><button id="btnChangeTicket" class="link-btn">Change</button></div>
+        <dl id="ticketDetail" class="detail"></dl>
+      </div>
+
+      <div class="step" id="stepType" hidden>
+        <div class="step-head"><span class="num">4</span><h2>What are you recording?</h2></div>
+        <div class="seg" role="radiogroup" aria-label="Record type">
+          <button class="seg-btn" data-type="Attend" role="radio" aria-checked="false"><strong>Attend</strong><small>Arrived on site</small></button>
+          <button class="seg-btn" data-type="Work Done" role="radio" aria-checked="false"><strong>Work Done</strong><small>Job completed</small></button>
+          <button class="seg-btn" data-type="Both" role="radio" aria-checked="false"><strong>Both</strong><small>Attend + done</small></button>
+        </div>
+      </div>
+
+      <div class="step" id="stepPhotos" hidden>
+        <div class="step-head"><span class="num">5</span><h2>Photos</h2></div>
+        <div id="photoGroups"></div>
+      </div>
+
+      <div class="step" id="stepRemarks" hidden>
+        <div class="step-head"><span class="num">6</span><h2>Remarks <span class="muted small">(optional)</span></h2></div>
+        <textarea id="remarks" rows="3" placeholder="Parts used, findings, follow-up needed…"></textarea>
+        <label class="check"><input type="checkbox" id="useGps" checked> Attach my GPS location</label>
+      </div>
+
+      <div class="submit-bar" id="submitBar" hidden>
+        <button id="btnSubmit" class="btn primary block">Submit record</button>
+      </div>
+    </section>
+
+    <!-- Done -->
+    <section id="screenDone" class="screen" hidden>
+      <div class="card done">
+        <div class="done-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="40" height="40"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+        <h1>Record submitted</h1>
+        <dl id="doneSummary" class="detail compact"></dl>
+        <button id="btnAnother" class="btn primary block">Log another</button>
+        <button id="btnSameFacility" class="btn ghost block">Another ticket at this facility</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="overlay" class="overlay" hidden>
+    <div class="overlay-box"><div class="spinner"></div><p id="overlayText">Uploading…</p><div class="bar"><span id="overlayBar"></span></div></div>
+  </div>
+
+  <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+  <input type="file" id="fileGallery" accept="image/*" multiple hidden>
+
+  <script src="./config.js"></script>
+  <script src="./common.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

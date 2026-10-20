@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin · Facility Job Log</title>
+  <meta name="theme-color" content="#9E1B1F">
+  <link rel="icon" href="./icons/icon-192.png">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+<body class="admin">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M9 11l3 3 8-8M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>
+      <span>Job Log · Admin</span>
+    </div>
+    <a class="chip-btn" href="./index.html" style="text-decoration:none">Technician app</a>
+  </header>
+  <div id="demoBanner" class="banner" hidden>Demo mode. Uploads and records stay in this browser tab only.</div>
+
+  <main>
+    <section id="adminLogin" class="card login" style="max-width:440px;margin-inline:auto" hidden>
+      <h1>Admin sign in</h1>
+      <p class="muted">Use the admin key set in your Apps Script.</p>
+      <label class="field"><span>Admin key</span><input id="adminKey" type="password" autocomplete="current-password"></label>
+      <button id="btnAdminLogin" class="btn primary block">Sign in</button>
+      <p id="adminErr" class="error" hidden></p>
+    </section>
+
+    <section id="adminMain" hidden>
+      <nav class="tabs" role="tablist">
+        <button class="tab on" data-tab="subs" role="tab">Records</button>
+        <button class="tab" data-tab="tickets" role="tab">Ticket list</button>
+      </nav>
+
+      <!-- Records -->
+      <div id="tab-subs">
+        <div class="toolbar">
+          <button id="btnReload" class="btn sm">Reload</button>
+          <button id="btnExport" class="btn sm primary">Download Excel</button>
+          <a id="lnkSheet" href="#" target="_blank" rel="noopener noreferrer" hidden>Open Google Sheet</a>
+          <a id="lnkFolder" href="#" target="_blank" rel="noopener noreferrer" hidden>Open photo folder</a>
+        </div>
+        <div class="stats" id="subStats"></div>
+        <div class="filters">
+          <input id="fText" type="search" placeholder="Search ticket, facility, remarks…" aria-label="Search records">
+          <select id="fFacility" aria-label="Facility"><option value="">All facilities</option></select>
+          <select id="fTech" aria-label="Technician"><option value="">All technicians</option></select>
+          <select id="fType" aria-label="Type"><option value="">All types</option><option>Attend</option><option>Work Done</option></select>
+        </div>
+        <div id="subList" class="subs"></div>
+      </div>
+
+      <!-- Tickets -->
+      <div id="tab-tickets" hidden>
+        <div class="card">
+          <h2 style="font-size:var(--text-lg);margin-bottom:var(--sp-2)">Upload ticket list</h2>
+          <p class="muted" style="margin-top:0">Upload your Excel (.xlsx, .xls or .csv). The first sheet is used and its first row must be the column headers. It needs a <b>Facility</b> column and a <b>Ticket / Report No</b> column; every other column (Main Category, Category, Sub Category, Title, Description, etc.) is shown to technicians as-is. Uploading <b>replaces</b> the current list, so remove a facility or ticket by deleting its row in Excel and uploading again.</p>
+          <label class="drop" id="drop">
+            <input type="file" id="xlsFile" accept=".xlsx,.xls,.csv" hidden>
+            <p><b>Tap to choose an Excel file</b></p>
+            <p class="muted small">or drag and drop it here</p>
+          </label>
+          <div id="preview" hidden>
+            <div class="stats" id="upStats"></div>
+            <p id="upWarn" class="error" hidden></p>
+            <div class="table-wrap"><table id="upTable"></table></div>
+            <div class="toolbar" style="margin-top:var(--sp-4)">
+              <button id="btnPublish" class="btn primary">Replace ticket list</button>
+              <button id="btnCancelUp" class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:var(--sp-4)">
+          <div class="toolbar" style="justify-content:space-between"><h2 style="font-size:var(--text-lg)">Current ticket list</h2><span id="curCount" class="muted small"></span></div>
+          <div class="table-wrap"><table id="curTable"></table></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="./config.js"></script>
+  <script src="./common.js"></script>
+  <script src="./admin.js"></script>
+</body>
+</html>
